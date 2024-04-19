@@ -3,6 +3,7 @@ import {
   FavoriteBorderOutlined,
   FavoriteOutlined,
   ShareOutlined,
+  DeleteOutline // Add delete icon
 } from "@mui/icons-material";
 import { Box, Divider, IconButton, Typography, useTheme } from "@mui/material";
 import FlexBetween from "components/FlexBetween";
@@ -47,6 +48,41 @@ const PostWidget = ({
     dispatch(setPost({ post: updatedPost }));
   };
 
+  const handleDeletePost = async () => {
+    try {
+      const response = await fetch(`http://localhost:3001/posts/${postId}/delete`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ userId: loggedInUserId }),
+      });
+
+      if (response.status === 200) {
+        window.location.reload();
+      } else {
+        console.error("Failed to delete post");
+      }
+    } catch (error) {
+      console.error("Error deleting post:", error);
+    }
+  };
+
+  const fetchPosts = async () => {
+    // Fetch posts data from the server and update the state
+    try {
+      const response = await fetch("http://localhost:3001/posts", {
+        method: "GET",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await response.json();
+      dispatch(setPost({ posts: data }));
+    } catch (error) {
+      console.error("Error fetching posts:", error);
+    }
+  };
+
   return (
     <WidgetWrapper m="2rem 0">
       <Friend
@@ -88,9 +124,16 @@ const PostWidget = ({
           </FlexBetween>
         </FlexBetween>
 
-        <IconButton>
-          <ShareOutlined />
-        </IconButton>
+        <FlexBetween gap="1rem"> {/* Add delete button */}
+          {loggedInUserId === postUserId && (
+            <IconButton onClick={handleDeletePost}>
+              <DeleteOutline />
+            </IconButton>
+          )}
+          <IconButton>
+            <ShareOutlined />
+          </IconButton>
+        </FlexBetween>
       </FlexBetween>
       {isComments && (
         <Box mt="0.5rem">
