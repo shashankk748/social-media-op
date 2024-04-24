@@ -3,7 +3,7 @@ import {
   FavoriteBorderOutlined,
   FavoriteOutlined,
   ShareOutlined,
-  DeleteOutline // Add delete icon
+  DeleteOutline
 } from "@mui/icons-material";
 import { Box, Divider, IconButton, Typography, useTheme } from "@mui/material";
 import FlexBetween from "components/FlexBetween";
@@ -47,7 +47,30 @@ const PostWidget = ({
     const updatedPost = await response.json();
     dispatch(setPost({ post: updatedPost }));
   };
+  const handleComment=async(commentId)=>{
+    
+  }
+  const handleDeleteComment = async (commentId) => {
+    try {
+      const response = await fetch(`http://localhost:3001/posts/${postId}/comment/${commentId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
 
+      if (response.status === 200) {
+        // Update the post state after comment deletion
+        const updatedPost = await response.json();
+        dispatch(setPost({ post: updatedPost }));
+      } else {
+        console.error("Failed to delete comment");
+      }
+    } catch (error) {
+      console.error("Error deleting comment:", error);
+    }
+  };
   const handleDeletePost = async () => {
     try {
       const response = await fetch(`http://localhost:3001/posts/${postId}/delete`, {
@@ -68,21 +91,6 @@ const PostWidget = ({
       console.error("Error deleting post:", error);
     }
   };
-
-  const fetchPosts = async () => {
-    // Fetch posts data from the server and update the state
-    try {
-      const response = await fetch("http://localhost:3001/posts", {
-        method: "GET",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await response.json();
-      dispatch(setPost({ posts: data }));
-    } catch (error) {
-      console.error("Error fetching posts:", error);
-    }
-  };
-
   return (
     <WidgetWrapper m="2rem 0">
       <Friend
@@ -124,25 +132,32 @@ const PostWidget = ({
           </FlexBetween>
         </FlexBetween>
 
-        <FlexBetween gap="1rem"> {/* Add delete button */}
-          {loggedInUserId === postUserId && (
+        {loggedInUserId === postUserId && (
+          <FlexBetween gap="1rem">
             <IconButton onClick={handleDeletePost}>
               <DeleteOutline />
             </IconButton>
-          )}
-          <IconButton>
-            <ShareOutlined />
-          </IconButton>
-        </FlexBetween>
+            <IconButton>
+              <ShareOutlined />
+            </IconButton>
+          </FlexBetween>
+        )}
       </FlexBetween>
       {isComments && (
         <Box mt="0.5rem">
           {comments.map((comment, i) => (
             <Box key={`${name}-${i}`}>
               <Divider />
-              <Typography sx={{ color: main, m: "0.5rem 0", pl: "1rem" }}>
-                {comment}
-              </Typography>
+              <FlexBetween align="center">
+                <Typography sx={{ color: main, m: "0.5rem 0", pl: "1rem" }}>
+                  {comment}
+                </Typography>
+                {loggedInUserId === comment.userId && (
+                  <IconButton onClick={() => handleDeleteComment(comment._id)}>
+                    <DeleteOutline />
+                  </IconButton>
+                )}
+              </FlexBetween>
             </Box>
           ))}
           <Divider />

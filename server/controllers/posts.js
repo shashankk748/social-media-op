@@ -72,6 +72,40 @@ export const likePost = async (req, res) => {
   }
 };
 
+
+
+export const commentPost = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { userId, comment, action } = req.body;
+
+    const post = await Post.findById(id);
+
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    // Handle comment deletion
+    if (action === 'delete') {
+      const index = post.comments.findIndex((c) => c.userId === userId && c.comment === comment);
+      if (index === -1) {
+        return res.status(404).json({ message: "Comment not found" });
+      }
+      post.comments.splice(index, 1);
+    } else {
+      // Add the comment to the post
+      post.comments.push({ userId, comment });
+    }
+
+    // Save the updated post
+    const updatedPost = await post.save();
+
+    res.status(200).json(updatedPost);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
 /* DELETE */
 export const deletePost = async (req, res) => {
   try {
