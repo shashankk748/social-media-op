@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Box,
   IconButton,
@@ -24,12 +24,16 @@ import { useDispatch, useSelector } from "react-redux";
 import { setMode, setLogout } from "state";
 import { useNavigate } from "react-router-dom";
 import FlexBetween from "components/FlexBetween";
+import { useParams } from "react-router-dom";
 
 const Navbar = () => {
+  const token = useSelector((state) => state.token);
   const [isMobileMenuToggled, setIsMobileMenuToggled] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const user = useSelector((state) => state.user);
+  const [nametosearch, doNametosearch] = useState("");
+  const [friends, setFriends] = useState([]);
   const isNonMobileScreens = useMediaQuery("(min-width: 1000px)");
 
   const theme = useTheme();
@@ -40,6 +44,36 @@ const Navbar = () => {
   const alt = theme.palette.background.alt;
 
   const fullName = `${user.firstName} ${user.lastName}`;
+  const { userId } = useParams();
+  const getFriends = async () => {
+    try {
+      const response = await fetch(
+        `http://localhost:3001/users/${userId}/${friends}`,
+        {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      const data = await response.json();
+      setFriends(data); // Update friends state with fetched data
+    } catch (error) {
+      console.error("Error fetching friends:", error);
+    }
+  };
+  useEffect(() => {
+    // Function to fetch friends
+    // Call getFriends function when nametosearch changes
+    // if (nametosearch !== "") {
+      getFriends();
+    // }
+  }, [nametosearch, userId, token]);
+
+  const handleSearchClick = () => {
+    // Call getFriends function when search button is clicked
+    if (nametosearch !== "") {
+      getFriends();
+    }
+  };
 
   return (
     <FlexBetween padding="1rem 6%" backgroundColor={alt}>
@@ -56,7 +90,7 @@ const Navbar = () => {
             },
           }}
         >
-          Sociopedia
+          SocialHub
         </Typography>
         {isNonMobileScreens && (
           <FlexBetween
@@ -65,8 +99,12 @@ const Navbar = () => {
             gap="3rem"
             padding="0.1rem 1.5rem"
           >
-            <InputBase placeholder="Search..." />
-            <IconButton>
+            <InputBase
+              placeholder="Search..."
+              value={nametosearch}
+              onChange={(e) => doNametosearch(e.target.value)}
+            />
+            <IconButton onClick={handleSearchClick}>
               <Search />
             </IconButton>
           </FlexBetween>

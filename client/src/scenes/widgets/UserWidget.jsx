@@ -21,6 +21,8 @@ const UserWidget = ({ userId, picturePath }) => {
   const medium = palette.neutral.medium;
   const main = palette.neutral.main;
 
+  const [isHovered, setIsHovered] = useState(false);
+
   const getUser = async () => {
     const response = await fetch(`http://localhost:3001/users/${userId}`, {
       method: "GET",
@@ -74,8 +76,12 @@ const UserWidget = ({ userId, picturePath }) => {
             </Typography>
             <Typography color={medium}>{friends.length} friends</Typography>
           </Box>
-        </FlexBetween>
-        <ManageAccountsOutlined />
+        </FlexBetween >
+        <ManageAccountsOutlined 
+         style={{ cursor: isHovered ? 'pointer' : 'default' }}
+         onMouseEnter={() => setIsHovered(true)}
+         onMouseLeave={() => setIsHovered(false)}
+        />
       </FlexBetween>
 
       <Divider />

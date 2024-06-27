@@ -30,6 +30,34 @@ export const getUserFriends = async (req, res) => {
   }
 };
 
+export const findUsers = async (req, res) => {
+  try {
+    const { firstName, lastName } = req.query;
+    const query = {};
+
+    if (firstName || lastName) {
+      if (firstName) query.firstName = firstName;
+      if (lastName) query.lastName = lastName;
+    } else {
+      return res.status(200).json([]);
+    }
+
+    const users = await User.find(query);
+
+    const formattedUsers = users.map(
+      ({ _id, firstName, lastName, occupation, location, picturePath }) => {
+        return { _id, firstName, lastName, occupation, location, picturePath };
+      }
+    );
+
+    res.status(200).json(formattedUsers);
+  } catch (err) {
+    res.status(404).json({ message: err.message });
+  }
+};
+
+
+
 /* UPDATE */
 export const addRemoveFriend = async (req, res) => {
   try {
